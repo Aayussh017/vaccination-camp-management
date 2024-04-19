@@ -1,0 +1,185 @@
+import java.io.*;
+import java.util.*;
+
+class VaccinationCamp {
+    private static final String FILE_PATH = "D:/Vaccinationcamp.csv";
+
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        while (true) {
+            displayMenu();
+            int choice = scanner.nextInt();
+            scanner.nextLine(); // Consume the newline character
+
+            switch (choice) {
+                case 1:
+                    addNewChild(scanner);
+                    break;
+                case 2:
+                    displayAllData();
+                    break;
+                case 3:
+                    searchChildData(scanner);
+                    break;
+                case 4:
+                    deleteChildData(scanner);
+                    break;
+                case 5:
+                    updateChildData(scanner);
+                    break;
+                case 6:
+                    System.out.println("Thank you! Visit Again");
+                    return;
+                default:
+                    System.out.println("Please check the number.");
+            }
+        }
+    }
+
+    private static void displayMenu() {
+        System.out.println("*".repeat(80));
+        System.out.println(" ".repeat(10) + "\\ / |~\\ |~~ |~~ ~|~ |\\ | |~\\ ~|~ ~|~ |~| |\\ |");
+        System.out.println(" ".repeat(10) + " \\/ |--\\ |__  |__  _|_ | \\| |~~\\ | _|_ |_| | \\|");
+        System.out.println("*".repeat(80));
+        System.out.println("PRESS 1: Add New Child");
+        System.out.println("PRESS 2: Display all Children Data");
+        System.out.println("PRESS 3: Search Child Data");
+        System.out.println("PRESS 4: Delete Child Data");
+        System.out.println("PRESS 5: Update Child Data");
+        System.out.println("PRESS 6: Exit");
+        System.out.println("*".repeat(80));
+    }
+
+    private static void addNewChild(Scanner scanner) {
+        try (FileWriter writer = new FileWriter(FILE_PATH, true)) {
+            System.out.print("Enter Child Number: ");
+            String childNumber = scanner.nextLine();
+            System.out.print("Enter Child Name: ");
+            String childName = scanner.nextLine();
+            System.out.print("Enter Vaccine Name: ");
+            String vaccineName = scanner.nextLine();
+            System.out.print("Enter Child Age: ");
+            String childAge = scanner.nextLine();
+            System.out.print("Enter Parent Contact Number: ");
+            String parentContact = scanner.nextLine();
+
+            String row = String.join(",", childNumber, childName, vaccineName, childAge, parentContact);
+            writer.write(row + "\n");
+
+            System.out.print("Would you like to continue (Y/N)? ");
+            String continueChoice = scanner.nextLine();
+            if (continueChoice.equalsIgnoreCase("N")) {
+                return;
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static void displayAllData() {
+        try (BufferedReader reader = new BufferedReader(new FileReader(FILE_PATH))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                System.out.println(line);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static void searchChildData(Scanner scanner) {
+        System.out.print("Enter Parent Contact Number: ");
+        String contactNumber = scanner.nextLine();
+
+        try (BufferedReader reader = new BufferedReader(new FileReader(FILE_PATH))) {
+            String line;
+            boolean found = false;
+            while ((line = reader.readLine()) != null) {
+                String[] data = line.split(",");
+                if (data[4].equals(contactNumber)) {
+                    System.out.println(line);
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                System.out.println("Contact not found.");
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static void deleteChildData(Scanner scanner) {
+        System.out.print("Enter Child Number to Delete: ");
+        String childNumber = scanner.nextLine();
+
+        try (BufferedReader reader = new BufferedReader(new FileReader(FILE_PATH));
+             FileWriter writer = new FileWriter("D:/temp.csv")) {
+            String line;
+            boolean deleted = false;
+            while ((line = reader.readLine()) != null) {
+                String[] data = line.split(",");
+                if (!data[0].equals(childNumber)) {
+                    writer.write(line + "\n");
+                } else {
+                    System.out.println("Deleted: " + line);
+                    deleted = true;
+                }
+            }
+            if (!deleted) {
+                System.out.println("Child data not found.");
+            }
+            reader.close();
+            writer.close();
+            File file = new File(FILE_PATH);
+            file.delete();
+            File tempFile = new File("D:/temp.csv");
+            tempFile.renameTo(file);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static void updateChildData(Scanner scanner) {
+        System.out.print("Enter Child Number to Update: ");
+        String childNumber = scanner.nextLine();
+
+        try (BufferedReader reader = new BufferedReader(new FileReader(FILE_PATH));
+             FileWriter writer = new FileWriter("D:/temp.csv")) {
+            String line;
+            boolean updated = false;
+            while ((line = reader.readLine()) != null) {
+                String[] data = line.split(",");
+                if (data[0].equals(childNumber)) {
+                    System.out.println("Previous data: " + line);
+                    System.out.print("Enter Updated Child Number: ");
+                    data[0] = scanner.nextLine();
+                    System.out.print("Enter Updated Child Name: ");
+                    data[1] = scanner.nextLine();
+                    System.out.print("Enter Updated Vaccine Name: ");
+                    data[2] = scanner.nextLine();
+                    System.out.print("Enter Updated Child Age: ");
+                    data[3] = scanner.nextLine();
+                    System.out.print("Enter Updated Parent Contact Number: ");
+                    data[4] = scanner.nextLine();
+                    writer.write(String.join(",", data) + "\n");
+                    updated = true;
+                } else {
+                    writer.write(line + "\n");
+                }
+            }
+            if (!updated) {
+                System.out.println("Child data not found.");
+            }
+            reader.close();
+            writer.close();
+            File file = new File(FILE_PATH);
+            file.delete();
+            File tempFile = new File("D:/temp.csv");
+            tempFile.renameTo(file);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+}
